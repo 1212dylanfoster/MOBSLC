@@ -23,3 +23,18 @@ Employees can open only whitelisted pages; everything else is blocked and the to
 
 ## Automatic builds and releases (GitHub Actions)
 Every push to `main` builds a Windows installer and two macOS disk images (`arm64` for Apple Silicon, `x64` for Intel). When both builds pass, a new release is published on the repo's **Releases** page with all three files attached, versioned `0.1.<build number>`. To start a new version series, change `version` in `package.json` (for example to `0.2.0`). Pull requests are built but not released. Builds are unsigned until you add code-signing certificates as repository secrets.
+
+## Opening the Mac app
+Builds are ad-hoc signed. The first time a user opens the app, macOS shows a warning: click **Done**, then go to **System Settings > Privacy & Security** and click **Open Anyway**. If a Mac still says the app is damaged, run this once in Terminal:
+
+    xattr -cr "/Applications/Company Browser.app"
+
+To remove the warning for everyone, sign and notarize with an Apple Developer ID (Apple Developer Program, $99/year). Add these repository secrets and the workflow does the rest:
+
+| Secret | Value |
+|---|---|
+| `MAC_CERT_P12_BASE64` | Your "Developer ID Application" certificate exported as .p12, base64-encoded (`base64 -i cert.p12`) |
+| `MAC_CERT_PASSWORD` | Password of that .p12 |
+| `APPLE_ID` | Apple ID email of the developer account |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password from appleid.apple.com |
+| `APPLE_TEAM_ID` | 10-character Team ID from developer.apple.com |

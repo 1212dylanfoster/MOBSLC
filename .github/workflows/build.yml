@@ -46,13 +46,25 @@ jobs:
       - name: Build installer
         run: npm run dist
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"   # unsigned until you add signing certificates
+          # Without Apple secrets: ad-hoc signed (opens via Privacy & Security > Open Anyway).
+          # With them: signed with your Developer ID and notarized, so it opens with no warning.
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.MAC_CERT_P12_BASE64 != '' && 'true' || 'false' }}
+          CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Check both Mac chips were built
         if: runner.os == 'macOS'
         run: |
           ls dist/*arm64*.dmg
           ls dist/*x64*.dmg
+          for app in dist/mac*/*.app; do
+            echo "Checking signature: $app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+            codesign -dv "$app" 2>&1 | grep -E "Signature|Authority|flags" || true
+          done
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
@@ -99,7 +111,9 @@ jobs:
             | `Company.Browser-${{ steps.v.outputs.version }}-mac-arm64.dmg` | Mac with Apple Silicon (M1 and later) |
             | `Company.Browser-${{ steps.v.outputs.version }}-mac-x64.dmg` | Mac with Intel chip |
 
-            These builds are unsigned. Windows shows a SmartScreen warning and macOS blocks the app until code signing is set up.
+            **First time opening on a Mac:** double-click the app, click **Done** on the warning, then open **System Settings > Privacy & Security**, scroll down and click **Open Anyway**. You only need to do this once. This step goes away once the app is signed with an Apple Developer ID.
+
+            Windows may show a SmartScreen warning: click **More info > Run anyway**.
           files: |
             installers/*.exe
             installers/*.dmg
