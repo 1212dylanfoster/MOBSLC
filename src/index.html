@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+<title>Company Browser</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="login" class="login">
+  <div class="login-card">
+    <h1>Company Browser</h1>
+    <p id="login-msg">Sign in with your work account to open internal sites.</p>
+    <button id="signin" class="primary">Sign in with Microsoft</button>
+  </div>
+</section>
+
+<section id="shell" hidden>
+  <div class="tabbar" id="tabbar"></div>
+  <div class="toolbar">
+    <button id="back" title="Back" aria-label="Back">&#8592;</button>
+    <button id="forward" title="Forward" aria-label="Forward">&#8594;</button>
+    <button id="reload" title="Reload" aria-label="Reload">&#8635;</button>
+    <input id="address" type="text" spellcheck="false" aria-label="Address" placeholder="Enter an internal address">
+    <span id="who" class="who"></span>
+    <button id="admin" hidden>Admin</button>
+    <button id="signout">Sign out</button>
+  </div>
+  <div class="links"><div id="chips" class="chips"></div><span id="notice" class="notice" role="status"></span></div>
+</section>
+
+<section id="panel" class="panel" hidden>
+  <div class="panel-card">
+    <h2>Browser policy</h2>
+    <label>Whitelist: pages employees can open <small>one per line as Name | address. Use host or host/path. Subdomains are included.</small>
+      <textarea id="allowed" rows="7" placeholder="HR portal | yourtenant.sharepoint.com/sites/hr"></textarea></label>
+    <label>Blocked domains <small>blocked even if allowed above</small>
+      <textarea id="blocked" rows="3"></textarea></label>
+    <label class="check"><input type="checkbox" id="downloads"> Allow downloads</label>
+    <label class="check"><input type="checkbox" id="devtools"> Allow developer tools <small>applies to new tabs</small></label>
+    <p id="panel-msg" role="status"></p>
+    <div class="row"><button id="panel-close">Close</button><button id="panel-save" class="primary">Save policy</button></div>
+  </div>
+</section>
+<script src="renderer.js"></script>
+</body>
+</html>
