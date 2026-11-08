@@ -20,3 +20,6 @@ Chromium (Electron) shell where Microsoft Entra ID sign-in is the only way in.
 
 ## Whitelist
 Employees can open only whitelisted pages; everything else is blocked and the toolbar explains why. Each entry is `Name | host` or `Name | host/path` (for example `HR portal | yourtenant.sharepoint.com/sites/hr`). Entries appear as shortcut buttons under the address bar. Path rules limit which page can be opened; files and scripts a page loads from the same host are still allowed so pages don't break.
+
+## Automatic builds (GitHub Actions)
+Every push to `main` builds a Windows installer and a macOS disk image on GitHub. Find them under the repo's **Actions** tab: open the latest run and download the files under **Artifacts**. Push a tag like `v0.1.0` to publish the installers on the **Releases** page. Builds are unsigned until you add code-signing certificates as repository secrets.

@@ -3,8 +3,34 @@
   "version": "0.1.0",
   "description": "Internal company browser, Chromium (Electron) with Microsoft Entra ID sign-in",
   "main": "src/main.js",
-  "scripts": { "start": "electron .", "dist": "electron-builder" },
-  "dependencies": { "@azure/msal-node": "^2.16.0" },
-  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" },
-  "build": { "appId": "com.yourcompany.browser", "productName": "Company Browser", "files": ["src/**", "package.json"] }
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.16.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.yourcompany.browser",
+    "productName": "Company Browser",
+    "files": [
+      "src/**",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    }
+  }
 }
