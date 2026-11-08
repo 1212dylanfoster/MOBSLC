@@ -1,14 +1,17 @@
-name: Build installers
+name: Build and release
 
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write   # lets tagged builds attach installers to a GitHub Release
+  contents: write   # needed to create releases
+
+env:
+  # Version for this build: base version from package.json + build number (e.g. 0.1.7)
+  BUILD_NUMBER: ${{ github.run_number }}
 
 jobs:
   build:
@@ -23,6 +26,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Set build version
+        shell: bash
+        run: |
+          base=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
+          npm version "$base.$BUILD_NUMBER" --no-git-tag-version --allow-same-version
 
       - name: Install dependencies
         run: npm install
@@ -54,10 +63,43 @@ jobs:
             dist/*.dmg
           if-no-files-found: error
 
-      - name: Attach to release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+  release:
+    # Publishes only after BOTH builds pass, and only for pushes to main (not pull requests)
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out version
+        id: v
+        run: |
+          base=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
+          echo "version=$base.$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.v.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Company Browser ${{ steps.v.outputs.version }}
+          make_latest: true
+          fail_on_unmatched_files: true
+          body: |
+            Automatic build from commit ${{ github.sha }}.
+
+            | Download | For |
+            |---|---|
+            | `Company.Browser-${{ steps.v.outputs.version }}-win-x64.exe` | Windows |
+            | `Company.Browser-${{ steps.v.outputs.version }}-mac-arm64.dmg` | Mac with Apple Silicon (M1 and later) |
+            | `Company.Browser-${{ steps.v.outputs.version }}-mac-x64.dmg` | Mac with Intel chip |
+
+            These builds are unsigned. Windows shows a SmartScreen warning and macOS blocks the app until code signing is set up.
           files: |
-            dist/*.exe
-            dist/*.dmg
+            installers/*.exe
+            installers/*.dmg
