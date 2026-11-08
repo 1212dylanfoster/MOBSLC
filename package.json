@@ -22,15 +22,31 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
       "category": "public.app-category.productivity"
-    }
+    },
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   }
 }

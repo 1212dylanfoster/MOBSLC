@@ -39,6 +39,12 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"   # unsigned until you add signing certificates
 
+      - name: Check both Mac chips were built
+        if: runner.os == 'macOS'
+        run: |
+          ls dist/*arm64*.dmg
+          ls dist/*x64*.dmg
+
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
@@ -46,7 +52,6 @@ jobs:
           path: |
             dist/*.exe
             dist/*.dmg
-            dist/*.zip
           if-no-files-found: error
 
       - name: Attach to release (tags only)
